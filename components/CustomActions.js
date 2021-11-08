@@ -1,11 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+
+// Import ui components
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
+// Import custom actions components
 import * as ImagePicker from 'expo-image-picker'
-// import { Camera } from 'expo-camera'
 import * as Location from 'expo-location'
 
+// Import firebase
 import firebase from 'firebase'
 
 export default class CustomActions extends React.Component {
@@ -16,17 +19,21 @@ export default class CustomActions extends React.Component {
     }
   }
 
+  // method for using a photo from the media library
   pickImage = async () => {
+    // get library permission
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
 
     try {
       if (status === 'granted') {
-        let result = await ImagePicker.launchImageLibraryAsync({
+        //get image from library
+        let libraryImage = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
         }).catch((error) => console.log(error.message))
 
-        if (!result.cancelled) {
-          const imageUrl = await this.uploadImage(result.uri)
+        //upload image to db, then send to chat
+        if (!libraryImage.cancelled) {
+          const imageUrl = await this.uploadImage(libraryImage.uri)
           this.props.onSend({ image: imageUrl })
         }
       }
@@ -35,17 +42,21 @@ export default class CustomActions extends React.Component {
     }
   }
 
+  // method for using camera to take a photo
   takeImage = async () => {
+    // get camera permission
     const { status } = await ImagePicker.requestCameraPermissionsAsync()
 
     try {
       if (status === 'granted') {
-        let result = await ImagePicker.launchCameraAsync({
+        //load camera and wait for photo to be taken
+        let cameraImage = await ImagePicker.launchCameraAsync({
           allowsEditing: true,
         }).catch((error) => console.log(error.message))
 
-        if (!result.cancelled) {
-          const imageUrl = await this.uploadImage(result.uri)
+        //upload image to db, then send to chat
+        if (!cameraImage.cancelled) {
+          const imageUrl = await this.uploadImage(cameraImage.uri)
           this.props.onSend({ image: imageUrl })
         }
       }
@@ -54,7 +65,9 @@ export default class CustomActions extends React.Component {
     }
   }
 
+  // upload image to db
   uploadImage = async (imageURI) => {
+    // create new blob from the image parameter
     const blob = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
       xhr.onload = function () {
@@ -69,31 +82,34 @@ export default class CustomActions extends React.Component {
       xhr.send(null)
     })
 
-    const ref = firebase
-      .storage()
-      .ref()
-      .child(`images/${new Date()}`)
+    // create image reference on the Firebase db
+    const ref = firebase.storage().ref().child(`images/${new Date()}`)
 
+    // upload blob into reference
     const snapshot = await ref.put(blob)
 
+    // remove blob locally
     blob.close()
 
+    // return image ref url from db
     return await snapshot.ref.getDownloadURL()
   }
 
   getLocation = async () => {
+    // get location permission
     const { status } = await Location.requestForegroundPermissionsAsync()
+
     try {
       if (status === 'granted') {
+        //get current location
         const location = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
         }).catch((error) => {
           console.error(error)
         })
 
-        console.log('location', location)
-
         if (location) {
+          //send location params to the chat page as a new chat message
           this.props.onSend({
             location: {
               longitude: location.coords.longitude,
@@ -107,6 +123,7 @@ export default class CustomActions extends React.Component {
     }
   }
 
+  // Action list menu
   onActionPress = () => {
     const options = [
       'Choose From Library',
@@ -140,6 +157,7 @@ export default class CustomActions extends React.Component {
 
   render() {
     return (
+      // button to open the actions menu
       <TouchableOpacity
         accessible={true}
         accessibilityLabel="Actions list"
@@ -178,6 +196,7 @@ const styles = StyleSheet.create({
   },
 })
 
+// define actionSheet prop as function
 CustomActions.contextTypes = {
   actionSheet: PropTypes.func,
 }

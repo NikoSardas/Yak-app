@@ -1,7 +1,9 @@
-//Main chat page
+// TODO fontFamily doesn't work in chat
+
+// Main chat page
 import React from 'react'
 
-//Require ui components
+// Import ui components
 import {
   View,
   Platform,
@@ -10,29 +12,36 @@ import {
   StyleSheet,
 } from 'react-native'
 
-import { GiftedChat, Bubble, InputToolbar } from 'react-native-gifted-chat'
+// Import GiftedChat components
+import {
+  GiftedChat,
+  Bubble,
+  InputToolbar,
+  MessageText,
+} from 'react-native-gifted-chat'
 
-// firebase namespace.
+//Import Firebase namespace.
 import firebase from 'firebase/app'
 
-// individual firebase services
+// Import individual firebase services
 import 'firebase/auth'
 import 'firebase/database'
 import 'firebase/firestore'
 import 'firebase/storage'
 
-//react-native localstorage utility
+// Import react-native localstorage utility
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-//library to determite online status
+// Import library to determite online status
 import NetInfo from '@react-native-community/netinfo'
 
-//react-native google-maps
+// Import react-native google-maps
 import MapView, { Marker } from 'react-native-maps'
 
+// Import CustomActions file
 import CustomActions from './CustomActions.js'
 
-// db config info
+// Firebase db config info
 const firebaseConfig = {
   apiKey: 'AIzaSyCSzK8i5fVqZd7Em_YhBrZ7UD2gRz6oG3Y',
   authDomain: 'yak-99fa5.firebaseapp.com',
@@ -43,15 +52,15 @@ const firebaseConfig = {
   measurementId: 'G-Y7R0FCM51R',
 }
 
-// db connection init
+// Firebase db connection init
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig)
 }
 
-// net connection status container
-let unsubscribeNetInfo = null
+// Net connection status container
+let connectionStatus = null
 
-//Main class
+// Main class
 export default class Chat extends React.Component {
   constructor(props) {
     super(props)
@@ -64,62 +73,60 @@ export default class Chat extends React.Component {
   }
 
   componentDidMount() {
-    //set connection listener
-    unsubscribeNetInfo = NetInfo.addEventListener((state) => {
-      console.log(state)
+    //Netinfo connection listener state
+    connectionStatus = NetInfo.addEventListener((state) => {
+      //change isConnected state when Netinfo state changes
       this.setState({
         isConnected: state.isConnected,
+        infoAlert: state.isConnected === false ? 'YAK is offline!' : '',
       })
     })
 
-    //Display username
+    //Display username on page title
     const { username } = this.props.route.params
     this.props.navigation.setOptions({
       title: username ? username : 'YAKker',
     })
 
-    // check online status
+    // check online status and run relevant methods
     NetInfo.fetch().then((connection) => {
       if (connection.isConnected) {
-        this.setState({ infoAlert: '', isConnected: true })
-
         //Firestore collection references
         this.referenceChatMessages = firebase.firestore().collection('messages')
 
         // set firebase auth listener
-        this.authUnsubscribe = firebase
-          .auth()
-          .onAuthStateChanged(async (user) => {
-            // if no user is signed-in, then sign-in anonymously
-            if (!user) {
-              this.setState({ infoAlert: 'Authenticating, please wait..' })
-              await firebase.auth().signInAnonymously()
-              this.setState({ infoAlert: '' })
-            }
+        this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
+          // if no user is signed-in, then sign-in anonymously
+          if (!user) {
+            // TODO info alert doesn't show
+            this.setState({ infoAlert: 'Authenticating, please wait..' }),
+              async () => {
+                await firebase.auth().signInAnonymously()
+                this.setState({ infoAlert: '' })
+              }
+          }
 
-            //update user state with currently active user data
-            this.setState({
-              messages: [],
-              uid: user.uid,
-            })
-
-            //take snapshot of all data - to be activated when component mounts off
-            this.unsubscribeAuth = this.referenceChatMessages
-              .orderBy('createdAt', 'desc')
-              .onSnapshot(this.onCollectionUpdate)
+          //update user state with currently active user data
+          this.setState({
+            messages: [],
+            uid: user.uid,
           })
+
+          //take snapshot of all data - to be activated when component mounts off
+          this.unsubscribeAuth = this.referenceChatMessages
+            .orderBy('createdAt', 'desc')
+            .onSnapshot(this.onCollectionUpdate)
+        })
       } else {
-        this.setState({ infoAlert: 'YAK is Offline', isConnected: false })
         // load messages from local storage
         this.getMessagesFromStorage()
       }
     })
   }
-
   componentWillUnmount() {
-    // unsubscribe methods on unmount
-    unsubscribeNetInfo()
+    // unsubscribe from chat updates on unmount
     this.referenceChatMessages && this.unsubscribeAuth()
+    //(remove net listener?)
   }
 
   // set data format when taking snapshots
@@ -147,7 +154,7 @@ export default class Chat extends React.Component {
     })
   }
 
-  // get messages from local storage
+  // get string messages from local storage then parse to JSON format
   async getMessagesFromStorage() {
     let messages = ''
     try {
@@ -160,7 +167,7 @@ export default class Chat extends React.Component {
     }
   }
 
-  // save messages to local storage
+  // save JSON messages to local storage in string format
   async saveMessagesToStorage() {
     try {
       await AsyncStorage.setItem(
@@ -223,10 +230,12 @@ export default class Chat extends React.Component {
     )
   }
 
+  // returns a custom action button on the left of the message composer
   renderCustomActions = (props) => {
     return <CustomActions {...props} />
   }
 
+  // returns a MapView container to diplay user location on google maps
   renderCustomView(props) {
     const { currentMessage } = props
     if (currentMessage.location) {
@@ -240,17 +249,22 @@ export default class Chat extends React.Component {
             longitudeDelta: 0.0421,
           }}
         >
-          {/* <Marker
+          <Marker
             coordinate={{
               latitude: currentMessage.location.latitude,
               longitude: currentMessage.location.longitude,
             }}
             title="My location"
-          /> */}
+          />
         </MapView>
       )
     }
     return null
+  }
+
+  // attempt to change fonts in chat window - not working
+  renderMessageText(props) {
+    return <MessageText {...props} style={{ fontFamily: 'Regular' }} />
   }
 
   render() {
@@ -261,10 +275,13 @@ export default class Chat extends React.Component {
           flex: 1,
           justifyContent: 'center',
           paddingTop: 40,
+          fontFamily: 'Regular',
         }}
       >
+        {/* user info alert display */}
         <Text style={styles.infoAlert}>{this.state.infoAlert}</Text>
 
+        {/* Chat settings */}
         <GiftedChat
           accessible
           accessibilityLabel="A chat bubble"
@@ -276,6 +293,7 @@ export default class Chat extends React.Component {
           placeholder="Type a message..."
           renderActions={this.renderCustomActions}
           renderCustomView={this.renderCustomView}
+          renderMessageText={this.renderMessageText}
           showUserAvatar
           isTyping
           renderUsernameOnMessage
@@ -288,6 +306,7 @@ export default class Chat extends React.Component {
           }}
         ></GiftedChat>
 
+        {/* small devices keyboard display fix */}
         {Platform.OS === 'android' ? (
           <KeyboardAvoidingView behavior="height" />
         ) : null}
@@ -300,5 +319,7 @@ const styles = StyleSheet.create({
   infoAlert: {
     textAlign: 'center',
     color: 'white',
+    zIndex: 10,
+    fontFamily: 'Bold',
   },
 })

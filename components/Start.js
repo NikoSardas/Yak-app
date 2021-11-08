@@ -1,6 +1,7 @@
 // Start page
 import React from 'react'
 
+// Import ui components
 import {
   View,
   TextInput,
@@ -10,9 +11,11 @@ import {
   TouchableOpacity,
 } from 'react-native'
 
+// Import icons and images
 import bgImg from '../assets/Background_Image.png'
 import Icon from 'react-native-vector-icons/FontAwesome'
 
+// Array of colors to select backgrounds from
 const bgColors = ['#3b392a', '#2a2d3b', '#2a3b2d', '#3b2a2a']
 
 export default class Start extends React.Component {
@@ -24,11 +27,14 @@ export default class Start extends React.Component {
     }
   }
 
+  // Returns a background color key set by color param
   setExampleBackground = (color) => {
     return {
       backgroundColor: color,
     }
   }
+
+  //sets new background color state
   changeBackground = (backgroundColor) => {
     this.setState({
       backgroundColor,
@@ -43,7 +49,10 @@ export default class Start extends React.Component {
           resizeMode="cover"
           style={styles.bgImage}
         >
+          {/* main title */}
           <Text style={styles.titleText}>YAK</Text>
+
+          {/* user box */}
           <View
             style={{
               backgroundColor: this.state.backgroundColor,
@@ -54,6 +63,7 @@ export default class Start extends React.Component {
               marginVertical: '6%',
             }}
           >
+            {/* text input */}
             <View style={styles.textInputView}>
               <Icon
                 style={styles.textIcon}
@@ -72,6 +82,8 @@ export default class Start extends React.Component {
                 placeholderTextColor="#888"
               />
             </View>
+
+            {/* color switch */}
             <View style={styles.backgroundsWrapper}>
               <Text
                 accessible
@@ -98,6 +110,8 @@ export default class Start extends React.Component {
                 ))}
               </View>
             </View>
+
+            {/* chat button */}
             <TouchableOpacity
               accessible
               accessibilityLabel="Click to enter chat"
@@ -138,6 +152,8 @@ const styles = StyleSheet.create({
     fontSize: 45,
     color: '#FFFFFF',
     textShadowColor: 'black',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
   },
   textInputView: {
     flexDirection: 'row',
