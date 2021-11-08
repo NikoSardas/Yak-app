@@ -1,4 +1,6 @@
 // TODO fontFamily doesn't work in chat
+// TODO info alert doesn't show on auth wait
+// TODO custom action on mobile needs to be clicked twice (first click removes kbd)
 
 // Main chat page
 import React from 'react'
@@ -98,7 +100,6 @@ export default class Chat extends React.Component {
         this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
           // if no user is signed-in, then sign-in anonymously
           if (!user) {
-            // TODO info alert doesn't show
             this.setState({ infoAlert: 'Authenticating, please wait..' }),
               async () => {
                 await firebase.auth().signInAnonymously()
@@ -154,7 +155,7 @@ export default class Chat extends React.Component {
     })
   }
 
-  // get string messages from local storage then parse to JSON format
+  // get string messages from local storage, then parse to JSON format
   async getMessagesFromStorage() {
     let messages = ''
     try {
@@ -217,14 +218,17 @@ export default class Chat extends React.Component {
     )
   }
 
-  // append message to GiftedChat screen and send to db on the callback
+  // sent message handler
   onSend(messages = []) {
+    // update giftedchat messages state
     this.setState(
       (previousState) => ({
         messages: GiftedChat.append(previousState.messages, messages),
       }),
       () => {
+        // add to db
         this.referenceChatMessages.add(messages[0])
+        // add to local storage
         this.saveMessagesToStorage()
       }
     )
@@ -235,7 +239,7 @@ export default class Chat extends React.Component {
     return <CustomActions {...props} />
   }
 
-  // returns a MapView container to diplay user location on google maps
+  // returns a MapView container to display user location on google maps
   renderCustomView(props) {
     const { currentMessage } = props
     if (currentMessage.location) {
