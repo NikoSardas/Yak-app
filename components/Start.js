@@ -130,6 +130,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   titleText: {
+    fontFamily: 'Bold',
     flex: 1,
     paddingTop: 100,
     textAlign: 'center',
@@ -151,6 +152,7 @@ const styles = StyleSheet.create({
     color: '#dbdbdb',
   },
   textInput: {
+    fontFamily: 'Regular',
     color: '#FFFFFF',
     marginLeft: 10,
     paddingLeft: 10,
@@ -164,6 +166,7 @@ const styles = StyleSheet.create({
     borderColor: '#888',
   },
   backgroundsText: {
+    fontFamily: 'Regular',
     textAlign: 'center',
     color: '#dbdbdb',
   },
@@ -189,6 +192,7 @@ const styles = StyleSheet.create({
     borderColor: '#888',
   },
   chatButtonText: {
+    fontFamily: 'Regular',
     color: '#dbdbdb',
     textAlign: 'center',
   },

@@ -3,12 +3,27 @@ import { StatusBar } from 'expo-status-bar'
 import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 
+import AppLoading from 'expo-app-loading';
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_600SemiBold,
+} from '@expo-google-fonts/poppins';
+
 import Start from './components/Start'
 import Chat from './components/Chat'
 
-export default function App() {
-  const Stack = createStackNavigator()
+const Stack = createStackNavigator()
 
+export default function App() {
+  let [fontsLoaded] = useFonts({
+    Regular: Poppins_400Regular,
+    Bold: Poppins_600SemiBold
+  });
+
+  if (!fontsLoaded) {
+    return <AppLoading />;
+  }
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Start">

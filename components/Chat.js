@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Text,
   StyleSheet,
-  Image,
 } from 'react-native'
 
 import { GiftedChat, Bubble, InputToolbar } from 'react-native-gifted-chat'
@@ -25,9 +24,10 @@ import 'firebase/storage'
 //react-native localstorage utility
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-//library to find out if a user is online or not
+//library to determite online status
 import NetInfo from '@react-native-community/netinfo'
 
+//react-native google-maps
 import MapView, { Marker } from 'react-native-maps'
 
 import CustomActions from './CustomActions.js'
@@ -49,7 +49,7 @@ if (!firebase.apps.length) {
 }
 
 // net connection status container
-// let unsubscribeNetInfo = null
+let unsubscribeNetInfo = null
 
 //Main class
 export default class Chat extends React.Component {
@@ -58,20 +58,19 @@ export default class Chat extends React.Component {
     this.state = {
       messages: [],
       infoAlert: '',
-      uid: '',
+      uid: 0,
       isConnected: undefined,
-      image: null,
-      location: null,
     }
   }
 
   componentDidMount() {
-    // set connection listener
-    //  unsubscribeNetInfo = NetInfo.addEventListener((state) => {
-    //   this.setState({
-    //     isConnected: state.isConnected,
-    //   })
-    // })
+    //set connection listener
+    unsubscribeNetInfo = NetInfo.addEventListener((state) => {
+      console.log(state)
+      this.setState({
+        isConnected: state.isConnected,
+      })
+    })
 
     //Display username
     const { username } = this.props.route.params
@@ -83,25 +82,9 @@ export default class Chat extends React.Component {
     NetInfo.fetch().then((connection) => {
       if (connection.isConnected) {
         this.setState({ infoAlert: '', isConnected: true })
+
         //Firestore collection references
         this.referenceChatMessages = firebase.firestore().collection('messages')
-
-        // Firestore document references
-        // this.referenceChatMessagesDoc = firebase
-        //   .firestore()
-        //   .collection('messages')
-        //   .doc('list')
-
-        // // Firestore user references
-        // this.referenceChatUser = firebase
-        //   .firestore()
-        //   .collection('messages')
-        //   .where('uid', '==', this.state.uid)
-
-        //take snapshot of user data - to be activated when component mounts off
-        // this.unsubscribeChatUser = this.referenceChatUser.onSnapshot(
-        //   this.onCollectionUpdate
-        // )
 
         // set firebase auth listener
         this.authUnsubscribe = firebase
@@ -118,11 +101,6 @@ export default class Chat extends React.Component {
             this.setState({
               messages: [],
               uid: user.uid,
-              // user: {
-              //   _id: user.uid,
-              //   name: username,
-              // avatar: 'https://placeimg.com/140/140/any',
-              // },
             })
 
             //take snapshot of all data - to be activated when component mounts off
@@ -132,14 +110,15 @@ export default class Chat extends React.Component {
           })
       } else {
         this.setState({ infoAlert: 'YAK is Offline', isConnected: false })
-        this.getMessages()
+        // load messages from local storage
+        this.getMessagesFromStorage()
       }
     })
   }
 
   componentWillUnmount() {
     // unsubscribe methods on unmount
-    // unsubscribeNetInfo()
+    unsubscribeNetInfo()
     this.referenceChatMessages && this.unsubscribeAuth()
   }
 
@@ -154,8 +133,13 @@ export default class Chat extends React.Component {
         _id: data._id,
         text: data.text,
         createdAt: data.createdAt.toDate(),
-        user: data.user,
-        avatar: data.avatar,
+        image: data.image || null,
+        location: data.location || null,
+        user: {
+          _id: data.user._id,
+          name: data.user.name,
+          avatar: data.user.avatar,
+        },
       })
     })
     this.setState({
@@ -164,7 +148,7 @@ export default class Chat extends React.Component {
   }
 
   // get messages from local storage
-  async getMessages() {
+  async getMessagesFromStorage() {
     let messages = ''
     try {
       messages = (await AsyncStorage.getItem('messages')) || []
@@ -212,10 +196,12 @@ export default class Chat extends React.Component {
         {...props}
         wrapperStyle={{
           left: {
+            fontFamily: 'Regular',
             backgroundColor: 'white',
             color: 'black',
           },
           right: {
+            fontFamily: 'Regular',
             backgroundColor: 'black',
             color: 'white',
           },
@@ -253,19 +239,21 @@ export default class Chat extends React.Component {
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
-        />
+        >
+          {/* <Marker
+            coordinate={{
+              latitude: currentMessage.location.latitude,
+              longitude: currentMessage.location.longitude,
+            }}
+            title="My location"
+          /> */}
+        </MapView>
       )
     }
     return null
   }
 
   render() {
-    // if (this.state.hasPermission === null) {
-    //   return <View />
-    // }
-    // if (this.state.hasPermission === false) {
-    //   return <Text>No access to camera</Text>
-    // }
     return (
       <View
         style={{
@@ -303,25 +291,6 @@ export default class Chat extends React.Component {
         {Platform.OS === 'android' ? (
           <KeyboardAvoidingView behavior="height" />
         ) : null}
-
-        {this.state.image && (
-          <Image
-            source={{ uri: this.state.image.uri }}
-            style={{ width: 200, height: 200 }}
-          />
-        )}
-
-        {this.state.location && (
-          <MapView
-            style={{ width: 300, height: 200 }}
-            region={{
-              latitude: this.state.location.coords.latitude,
-              longitude: this.state.location.coords.longitude,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
-          />
-        )}
       </View>
     )
   }
