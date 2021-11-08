@@ -1,6 +1,7 @@
 // TODO fontFamily doesn't work in chat
 // TODO info alert doesn't show on auth wait
 // TODO custom action on mobile needs to be clicked twice (first click removes kbd)
+// TODO net listener needs to be removed?
 
 // Main chat page
 import React from 'react'
@@ -22,15 +23,6 @@ import {
   MessageText,
 } from 'react-native-gifted-chat'
 
-//Import Firebase namespace.
-import firebase from 'firebase/app'
-
-// Import individual firebase services
-import 'firebase/auth'
-import 'firebase/database'
-import 'firebase/firestore'
-import 'firebase/storage'
-
 // Import react-native localstorage utility
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
@@ -42,6 +34,15 @@ import MapView, { Marker } from 'react-native-maps'
 
 // Import CustomActions file
 import CustomActions from './CustomActions.js'
+
+//Import Firebase namespace.
+import firebase from 'firebase/app'
+
+// Import individual firebase services
+import 'firebase/auth'
+import 'firebase/database'
+import 'firebase/firestore'
+import 'firebase/storage'
 
 // Firebase db config info
 const firebaseConfig = {
@@ -127,7 +128,6 @@ export default class Chat extends React.Component {
   componentWillUnmount() {
     // unsubscribe from chat updates on unmount
     this.referenceChatMessages && this.unsubscribeAuth()
-    //(remove net listener?)
   }
 
   // set data format when taking snapshots
