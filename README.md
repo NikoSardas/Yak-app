@@ -41,6 +41,6 @@ npm install
 ```bash
 expo start
 ```
-![Screenshot_20211108-095554_Expo Go](https://user-images.githubusercontent.com/89710667/140770072-088d55e3-aaa3-4c08-9f3a-829530a78824.jpg)
+<img style="user-select: none; margin: auto; cursor: zoom-in; background-color: rgb(230, 230, 230); transition: background-color 300ms ease 0s; " src="https://user-images.githubusercontent.com/89710667/140770072-088d55e3-aaa3-4c08-9f3a-829530a78824.jpg" width="344" height="746" >
 
 ---
