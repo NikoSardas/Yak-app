@@ -1,5 +1,4 @@
 // TODO fontFamily doesn't work in chat
-// TODO info alert doesn't show on auth wait
 // TODO custom action on mobile needs to be clicked twice (first click removes kbd)
 // TODO net listener needs to be removed?
 
@@ -101,11 +100,13 @@ export default class Chat extends React.Component {
         this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
           // if no user is signed-in, then sign-in anonymously
           if (!user) {
-            this.setState({ infoAlert: 'Authenticating, please wait..' }),
+            this.setState(
+              { infoAlert: 'Authenticating, please wait..' },
               async () => {
                 await firebase.auth().signInAnonymously()
                 this.setState({ infoAlert: '' })
               }
+            )
           }
 
           //update user state with currently active user data
@@ -125,6 +126,7 @@ export default class Chat extends React.Component {
       }
     })
   }
+
   componentWillUnmount() {
     // unsubscribe from chat updates on unmount
     this.referenceChatMessages && this.unsubscribeAuth()
@@ -222,15 +224,17 @@ export default class Chat extends React.Component {
   onSend(messages = []) {
     // update giftedchat messages state
     this.setState(
-      (previousState) => ({
-        messages: GiftedChat.append(previousState.messages, messages),
-      }),
-      () => {
-        // add to db
-        this.referenceChatMessages.add(messages[0])
-        // add to local storage
-        this.saveMessagesToStorage()
-      }
+      (previousState) => (
+        {
+          messages: GiftedChat.append(previousState.messages, messages),
+        },
+        () => {
+          // add to db
+          this.referenceChatMessages.add(messages[0])
+          // add to local storage
+          this.saveMessagesToStorage()
+        }
+      )
     )
   }
 
