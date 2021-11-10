@@ -1,6 +1,5 @@
 // TODO fontFamily doesn't work in chat
 // TODO custom action on mobile needs to be clicked twice (first click removes kbd)
-// TODO net listener needs to be removed?
 
 // Main chat page
 import React from 'react'
@@ -12,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Text,
   StyleSheet,
+  LogBox
 } from 'react-native'
 
 // Import GiftedChat components
@@ -19,7 +19,6 @@ import {
   GiftedChat,
   Bubble,
   InputToolbar,
-  MessageText,
 } from 'react-native-gifted-chat'
 
 // Import react-native localstorage utility
@@ -72,6 +71,7 @@ export default class Chat extends React.Component {
       uid: 0,
       isConnected: undefined,
     }
+    LogBox.ignoreAllLogs()
   }
 
   componentDidMount() {
@@ -111,12 +111,12 @@ export default class Chat extends React.Component {
 
           //update user state with currently active user data
           this.setState({
-            messages: [],
+            // messages: [],
             uid: user.uid,
           })
 
           //take snapshot of all data - to be activated when component mounts off
-          this.unsubscribeAuth = this.referenceChatMessages
+          this.onUnsubscribeMessages = this.referenceChatMessages
             .orderBy('createdAt', 'desc')
             .onSnapshot(this.onCollectionUpdate)
         })
@@ -129,7 +129,9 @@ export default class Chat extends React.Component {
 
   componentWillUnmount() {
     // unsubscribe from chat updates on unmount
-    this.referenceChatMessages && this.unsubscribeAuth()
+    this.referenceChatMessages &&
+      this.authUnsubscribe() &&
+      this.onUnsubscribeMessages()
   }
 
   // set data format when taking snapshots
@@ -206,12 +208,10 @@ export default class Chat extends React.Component {
         {...props}
         wrapperStyle={{
           left: {
-            fontFamily: 'Regular',
             backgroundColor: 'white',
             color: 'black',
           },
           right: {
-            fontFamily: 'Regular',
             backgroundColor: 'black',
             color: 'white',
           },
@@ -220,21 +220,18 @@ export default class Chat extends React.Component {
     )
   }
 
-  // sent message handler
   onSend(messages = []) {
     // update giftedchat messages state
     this.setState(
-      (previousState) => (
-        {
-          messages: GiftedChat.append(previousState.messages, messages),
-        },
-        () => {
-          // add to db
-          this.referenceChatMessages.add(messages[0])
-          // add to local storage
-          this.saveMessagesToStorage()
-        }
-      )
+      (previousState) => ({
+        messages: GiftedChat.append(previousState.messages, messages),
+      }),
+      () => {
+        // add to db
+        this.referenceChatMessages.add(messages[0])
+        // add to local storage
+        this.saveMessagesToStorage()
+      }
     )
   }
 
@@ -270,11 +267,6 @@ export default class Chat extends React.Component {
     return null
   }
 
-  // attempt to change fonts in chat window - not working
-  renderMessageText(props) {
-    return <MessageText {...props} style={{ fontFamily: 'Regular' }} />
-  }
-
   render() {
     return (
       <View
@@ -283,7 +275,6 @@ export default class Chat extends React.Component {
           flex: 1,
           justifyContent: 'center',
           paddingTop: 40,
-          fontFamily: 'Regular',
         }}
       >
         {/* user info alert display */}
@@ -296,12 +287,11 @@ export default class Chat extends React.Component {
           accessibilityHint="A single chat bubble containing user input"
           accessibilityRole="text"
           messages={this.state.messages}
-          renderBubble={this.renderBubble}
           onSend={(messages) => this.onSend(messages)}
+          renderBubble={this.renderBubble}
           placeholder="Type a message..."
           renderActions={this.renderCustomActions}
           renderCustomView={this.renderCustomView}
-          renderMessageText={this.renderMessageText}
           showUserAvatar
           isTyping
           renderUsernameOnMessage
@@ -312,7 +302,7 @@ export default class Chat extends React.Component {
             _id: this.state.uid,
             avatar: 'https://placeimg.com/140/140/any',
           }}
-        ></GiftedChat>
+        />
 
         {/* small devices keyboard display fix */}
         {Platform.OS === 'android' ? (

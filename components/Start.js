@@ -9,6 +9,7 @@ import {
   Text,
   ImageBackground,
   TouchableOpacity,
+  LogBox,
 } from 'react-native'
 
 // Import icons and images
@@ -25,6 +26,7 @@ export default class Start extends React.Component {
       username: 'YAKker',
       backgroundColor: '#2a2d3b',
     }
+    LogBox.ignoreAllLogs()
   }
 
   // Returns a background color key set by color param
