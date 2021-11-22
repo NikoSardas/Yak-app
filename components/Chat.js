@@ -11,15 +11,11 @@ import {
   KeyboardAvoidingView,
   Text,
   StyleSheet,
-  LogBox
+  LogBox,
 } from 'react-native'
 
 // Import GiftedChat components
-import {
-  GiftedChat,
-  Bubble,
-  InputToolbar,
-} from 'react-native-gifted-chat'
+import { GiftedChat, Bubble, InputToolbar } from 'react-native-gifted-chat'
 
 // Import react-native localstorage utility
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -108,7 +104,6 @@ export default class Chat extends React.Component {
               }
             )
           }
-
           //update user state with currently active user data
           this.setState({
             // messages: [],
