@@ -7,20 +7,6 @@ A React Native Mobile Chat App
 An app to provide users with a chat interface and options to share images and their
 location.
 
-![Capture](https://user-images.githubusercontent.com/89710667/140770368-e7aeb986-0f49-48d6-b18e-299e9b383a17.PNG)
-
-## Features
-
-● A page where users can enter their name and choose a background color for the chat screen
-before joining the chat.
-
-● A page displaying the conversation, as well as an input field and submit button.
-
-● The chat provides users with two additional communication features: sending images
-and location data.
-
-● Data gets stored online and offline.
-
 #### Built with
 
 - React Native
@@ -43,7 +29,5 @@ npm install
 ```bash
 expo start
 ```
-
-<img style="user-select: none; margin: auto; cursor: zoom-in; background-color: rgb(230, 230, 230); transition: background-color 300ms ease 0s; " src="https://user-images.githubusercontent.com/89710667/140770072-088d55e3-aaa3-4c08-9f3a-829530a78824.jpg" width="344" height="746" >
 
 ---
