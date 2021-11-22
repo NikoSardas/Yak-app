@@ -1,6 +1,6 @@
 # Yak
 
-<img src="https://user-images.githubusercontent.com/89710667/142873849-1156a4c1-f9e7-45b0-af57-a4e2fab9d3b2.PNG" alt="Capture" style="width: 300px; height:600px">
+<img src="https://user-images.githubusercontent.com/89710667/142876943-b989af29-9e28-48ff-bc51-16d8f0d953dd.gif" alt="scrnli_11_8_2021_9-54-49 AM" style="width: 300px">
 
 https://careerfoundry.com full stack web developer course App.
 
