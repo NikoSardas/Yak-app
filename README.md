@@ -19,7 +19,7 @@ location.
 ### CLI install and run
 ```bash
 git clone https://github.com/NikoSardas/Yak-app.git
-cd chat-app/
+cd yak-app/
 ```
 
 ```bash
